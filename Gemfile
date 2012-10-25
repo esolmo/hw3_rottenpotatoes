@@ -13,7 +13,7 @@ group :development, :test do
   gem 'capybara'
   gem 'launchy'
 end
-group :test do
+group :test, :development do
   gem 'cucumber-rails'
   gem 'cucumber-rails-training-wheels'
 end
