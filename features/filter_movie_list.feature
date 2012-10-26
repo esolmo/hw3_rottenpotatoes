@@ -27,7 +27,7 @@ Scenario: restrict to movies with 'PG' or 'R' ratings
   # enter step(s) to uncheck all other checkboxes
   When I uncheck the following ratings: G,PG-13
   # enter step to "submit" the search form on the homepage
-  When I press "ratings_submit" 
+  When I press "Refresh" 
   # enter step(s) to ensure that PG and R movies are visible
   Then I should see movies rated: PG,R  
   # enter step(s) to ensure that other movies are not visible
@@ -36,11 +36,11 @@ Scenario: restrict to movies with 'PG' or 'R' ratings
 Scenario: no ratings selected
   # see assignment
   When I uncheck all rattings
-  When I press "ratings_submit"
+  When I press "Refresh"
   Then I should see all movies
 
 Scenario: all ratings selected
   # see assignment
   When I check all rattings
-  When I press "ratings_submit"
-  Then I should see all movies 
+  When I press "Refresh"
+  Then I should not see all movies 

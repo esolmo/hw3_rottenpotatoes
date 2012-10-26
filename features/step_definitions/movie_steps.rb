@@ -15,7 +15,10 @@ end
 Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
   #  ensure that that e1 occurs before e2.
   #  page.content  is the entire content of the page as a string.
-  flunk "Unimplemented"
+  #flunk "Unimplemented"
+  aBody = page.body
+  puts aBody 
+  p aBody =~ /#.*{e1}.*#{e2}/ , "Wrong order of elements"
 end
 
 # Make it easier to express checking or unchecking several boxes at once
@@ -61,10 +64,10 @@ When /^I (un)?check all rattings$/ do | uncheck |
   all("input[type='checkbox']").each do |a| 
     if uncheck 
       uncheck(a[:id])
-      #puts a[:id], a[:checked]
+      puts a[:id], a[:checked]
     else
       check(a[:id]) 
-		#puts a[:id], a[:checked]
+		puts a[:id], a[:checked]
     end
   end
 
@@ -73,8 +76,16 @@ When /^I (un)?check all rattings$/ do | uncheck |
 end
 
 Then /I should (not )?see all movies/ do | negation |
-   tableRows = page.all(:xpath, "//table[@id='movies']/tbody//tr").count
-   assert(Movie.find(:all, :conditions => ['Rating IN (?)',Movie.all_ratings]).size == tableRows, 'failed');
+   tableRows = 0
+#= page.all(:xpath, "//table[@id='movies']/tbody//td[2]").count
+   page.all(:xpath, "//table[@id=\"movies\"]/tbody//td[2]").each do |row| 
+     tableRows = tableRows + 1 
+     puts tableRows
+   end
+   #puts x, x.count
+   movieCount = Movie.find(:all, :conditions => ['Rating IN (?)',Movie.all_ratings]).size
+   puts tableRows, movieCount
+   assert(movieCount == tableRows, 'failed');
    #puts tableRows
 end
 
