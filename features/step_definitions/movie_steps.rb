@@ -17,8 +17,14 @@ Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
   #  page.content  is the entire content of the page as a string.
   #flunk "Unimplemented"
   aBody = page.body
-  puts aBody 
-  p aBody =~ /#.*{e1}.*#{e2}/ , "Wrong order of elements"
+  #puts aBody
+  aReg1 = /(.*)#{e1}(.*)/
+  aReg2 = /(.*)#{e2}(.*)/  
+  aRes1 = aBody =~ aReg1
+  aRes2 = aBody =~ aReg2
+  #puts aRes1, aRes2
+  assert(aRes1 != nil && aRes2 != nil && aRes1 < aRes2, "Bad order of movies")  
+  #p aBody =~ /#.*{e1}.*#{e2}/ , "Wrong order of elements"
 end
 
 # Make it easier to express checking or unchecking several boxes at once
@@ -32,9 +38,15 @@ When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
   aList = rating_list.split(",");
   aList.each do |aRating| 
     if uncheck  
-      uncheck('ratings_'+aRating);
+      #uncheck('#ratings_'+aRating);
+      page.all(:xpath,"//input[@value = '"+"ratings_"+aRating+"' and @type = 'checkbox']").each do |el|
+         el.click
+      end
     else
-      check('ratings_'+aRating);
+      #check('#ratings_'+aRating);
+      page.all(:xpath,"//input[@value = '"+"ratings_"+aRating+"' and @type = 'checkbox']").each do |el|
+        el.click
+      end
     end
   end
   #flunk "Unimplemented"
@@ -44,48 +56,58 @@ Then /I should (not )?see movies rated: (.*)/ do |negation, rating_list|
    aResult = true;
    aList = rating_list.split(",");
    ados = []
-	aList.each { |s| ados << "^"+s }
-	areg = /#{ados.join("|")}/i 
+   aList.each { |s| ados << "^"+s }
+   areg = /#{ados.join("|")}/i 
 
    page.all(:xpath, "//table[@id='movies']/tbody//td[2]").each do |x| 
       if negation         
-			aResult = x.text =~ areg ? false : true;
-		else
+         aResult = x.text =~ areg ? false : true;
+      else
         aResult = x.text =~ areg ? true : false;
       end
       break if !aResult;
    end
+   puts "I should (not) see movies rated: ",page.body
    assert(aResult == true,'no passed')
    #flunk "Unimplemented"
 end
 
-When /^I (un)?check all rattings$/ do | uncheck | 
-  #puts "when i"  
-  all("input[type='checkbox']").each do |a| 
-    if uncheck 
-      uncheck(a[:id])
-      puts a[:id], a[:checked]
+When /^I (un)?check all ratings$/ do | uncheck |
+  aList = Movie.all_ratings;
+  aList.each do |aRating| 
+    if uncheck  
+      uncheck('ratings_'+aRating);
     else
-      check(a[:id]) 
-		puts a[:id], a[:checked]
+      check('ratings_'+aRating);
     end
-  end
-
+  end 
+  #puts "when i"  
+  #allChecks = all("input[type='checkbox']");
+  #puts allChecks
+  #allChecks.each do |a| 
+  #  if uncheck 
+  #    uncheck(a[:id])
+  #    puts a[:id], a[:checked]
+  #  else
+  #    check(a[:id]) 
+  #    puts a[:id], a[:checked]
+  #  end
+  #end
   #puts alist 
   #pending # express the regexp above with the code you wish you had
 end
 
 Then /I should (not )?see all movies/ do | negation |
-   tableRows = 0
-#= page.all(:xpath, "//table[@id='movies']/tbody//td[2]").count
-   page.all(:xpath, "//table[@id=\"movies\"]/tbody//td[2]").each do |row| 
-     tableRows = tableRows + 1 
-     puts tableRows
-   end
-   #puts x, x.count
+   #tableRows = 0
+   #table= page.all(:xpath, "//table[@id='movies']/tbody//tr")
+   #tableRows = table.count
+   c =page.body
+   c1 =c.scan(/<tr>.<td>/im).size
+   puts "<<<<<<< Inicio   >>>>>>>", c, c1,"<<<<<<< FIN >>>>>>>"
+
    movieCount = Movie.find(:all, :conditions => ['Rating IN (?)',Movie.all_ratings]).size
-   puts tableRows, movieCount
-   assert(movieCount == tableRows, 'failed');
+   #puts tableRows, movieCount
+   assert(movieCount == c1, 'Diferent values of movieCount and c1 ( #{movieCount} <-> #{c1} )',);
    #puts tableRows
 end
 
