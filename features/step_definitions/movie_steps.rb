@@ -38,28 +38,30 @@ When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
   aList = rating_list.split(",");
   aList.each do |aRating| 
     if uncheck  
-      #uncheck('#ratings_'+aRating);
-      page.all(:xpath,"//input[@value = '"+"ratings_"+aRating+"' and @type = 'checkbox']").each do |el|
-         el.click
-      end
+      uncheck('ratings_'+aRating);
+      #page.all(:xpath,"//input[@value = '"+"ratings_"+aRating+"' and @type = 'checkbox']").each do |el|
+      #   el.click
+      #end
     else
-      #check('#ratings_'+aRating);
-      page.all(:xpath,"//input[@value = '"+"ratings_"+aRating+"' and @type = 'checkbox']").each do |el|
-        el.click
-      end
+      check('ratings_'+aRating);
+      #page.all(:xpath,"//input[@value = '"+"ratings_"+aRating+"' and @type = 'checkbox']").each do |el|
+      #  el.click
+      #end
     end
   end
   #flunk "Unimplemented"
 end
 
 Then /I should (not )?see movies rated: (.*)/ do |negation, rating_list|
-   aResult = true;
+   
    aList = rating_list.split(",");
    ados = []
    aList.each { |s| ados << "^"+s }
    areg = /#{ados.join("|")}/i 
-
+   puts page.all(:xpath, "//table[@id='movies']/tbody//td[2]").size
+   aResult =page.all(:xpath, "//table[@id='movies']/tbody//td[2]").size > 0
    page.all(:xpath, "//table[@id='movies']/tbody//td[2]").each do |x| 
+      puts negation, x.text, areg
       if negation         
          aResult = x.text =~ areg ? false : true;
       else
@@ -67,8 +69,8 @@ Then /I should (not )?see movies rated: (.*)/ do |negation, rating_list|
       end
       break if !aResult;
    end
-   puts "I should (not) see movies rated: ",page.body
-   assert(aResult == true,'no passed')
+   #puts "I should (not) see movies rated: ",page.body
+   assert(aResult == true,'(not) See movies didnt passed')
    #flunk "Unimplemented"
 end
 
@@ -103,7 +105,7 @@ Then /I should (not )?see all movies/ do | negation |
    #tableRows = table.count
    c =page.body
    c1 =c.scan(/<tr>.<td>/im).size
-   puts "<<<<<<< Inicio   >>>>>>>", c, c1,"<<<<<<< FIN >>>>>>>"
+   #puts "<<<<<<< Inicio   >>>>>>>", c, c1,"<<<<<<< FIN >>>>>>>"
 
    movieCount = Movie.find(:all, :conditions => ['Rating IN (?)',Movie.all_ratings]).size
    #puts tableRows, movieCount
